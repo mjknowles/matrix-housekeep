@@ -1,0 +1,10 @@
+.git
+.svelte-kit
+node_modules
+build
+dist
+npm-debug.log
+pnpm-debug.log
+.DS_Store
+.env
+.env.*

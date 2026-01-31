@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matrix-housekeep
+  namespace: ess
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matrix-housekeep
+  template:
+    metadata:
+      labels:
+        app: matrix-housekeep
+    spec:
+      containers:
+        - name: app
+          image: matrix-housekeep
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: /data/db.sqlite
+          ports:
+            - containerPort: 5173
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
