@@ -1,42 +1,34 @@
-# sv
+# Matrix Housekeep
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Matrix Housekeep is a Synapse monitoring/moderation tool. It authenticates via
+Matrix Authentication Service (MAS), verifies admin status through the Synapse
+Admin API, and ingests Synapse usage statistics for reporting.
 
-## Creating a project
+## Development
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+Use Tilt to run the app and patch Synapse/MAS configs locally:
 
 ```sh
-# recreate this project
-pnpm dlx sv create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" sveltekit-adapter="adapter:node" drizzle="database:sqlite+sqlite:better-sqlite3" --install pnpm matrix-housekeep
+tilt up
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Creating an admin user (MAS)
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+kubectl exec -n ess -it deploy/ess-matrix-authentication-service -- mas-cli manage register-user
 ```
 
-## Building
+Note: the MAS `--admin` flag makes the user a MAS admin. To request Synapse admin
+scopes, the user must have `can_request_admin` enabled in MAS policy or via the
+MAS admin API (dev policy uses `admin_users: []`).
 
-To create a production version of your app:
+## Creating a Synapse admin user (Synapse)
 
 ```sh
-npm run build
+scripts/register_synapse_admin.sh
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+If it fails with 404, your Synapse deployment may not expose the shared-secret
+registration endpoint when MAS/MSC3861 is enabled.
+In this environment the script sets the admin flag directly in the Synapse
+database.

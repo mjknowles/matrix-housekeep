@@ -2,10 +2,21 @@ APP_NAME = 'matrix-housekeep'
 IMAGE_NAME = 'matrix-housekeep'
 
 k8s_yaml([
-  'k8s/namespace.yaml',
   'k8s/deployment.yaml',
   'k8s/service.yaml',
 ])
+
+local_resource(
+  'patch-mas-config',
+  'kubectl apply -f k8s/mas-configmap-patch.yaml',
+  deps=['k8s/mas-configmap-patch.yaml'],
+)
+
+local_resource(
+  'patch-synapse-config',
+  'kubectl patch configmap ess-synapse -n ess --type merge --patch-file k8s/synapse-configmap-patch.yaml',
+  deps=['k8s/synapse-configmap-patch.yaml'],
+)
 
 
 docker_build(

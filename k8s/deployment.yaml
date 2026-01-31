@@ -20,6 +20,22 @@ spec:
           env:
             - name: DATABASE_URL
               value: /data/db.sqlite
+            - name: MAS_ISSUER
+              value: https://account.ess.localhost
+            - name: MAS_DISCOVERY_URL
+              value: http://ess-matrix-authentication-service.ess.svc.cluster.local:8080/.well-known/openid-configuration
+            - name: MAS_TOKEN_ENDPOINT
+              value: http://ess-matrix-authentication-service.ess.svc.cluster.local:8080/oauth2/token
+            - name: MAS_CLIENT_ID
+              value: 01JZ8M1T7XH6Q9Q0ZK9N9C2F3A
+            - name: MAS_CLIENT_SECRET
+              value: dev-secret
+            - name: MAS_REDIRECT_URI
+              value: http://localhost:5173/auth/callback
+            - name: MAS_SCOPE
+              value: openid urn:matrix:org.matrix.msc2967.client:api:* urn:synapse:admin:*
+            - name: SYNAPSE_BASE_URL
+              value: http://ess-synapse.ess.svc.cluster.local:8008
           ports:
             - containerPort: 5173
           volumeMounts:
