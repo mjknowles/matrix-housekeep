@@ -1,6 +1,8 @@
 <script lang="ts">
 	let { data } = $props();
-	const rows = data?.rows ?? [];
+	const rows = $derived(data?.rows ?? []);
+	let activePayload = $state<{ id: string; body: string } | null>(null);
+	let copyStatus = $state<'idle' | 'ok' | 'error'>('idle');
 
 	const formatDate = (value: number | Date | null) => {
 		if (!value) return '—';
@@ -9,6 +11,27 @@
 			dateStyle: 'medium',
 			timeStyle: 'short'
 		}).format(date);
+	};
+
+	const formatPayload = (raw: string) => {
+		try {
+			return JSON.stringify(JSON.parse(raw), null, 2);
+		} catch {
+			return raw;
+		}
+	};
+
+	const copyPayload = async () => {
+		if (!activePayload) return;
+		try {
+			await navigator.clipboard.writeText(activePayload.body);
+			copyStatus = 'ok';
+			setTimeout(() => {
+				copyStatus = 'idle';
+			}, 1500);
+		} catch {
+			copyStatus = 'error';
+		}
 	};
 </script>
 
@@ -46,10 +69,15 @@
 							<td>{row.dailyActiveUsers ?? '—'}</td>
 							<td>{row.dailyMessages ?? '—'}</td>
 							<td>
-								<details>
-									<summary>View</summary>
-									<pre>{row.payload}</pre>
-								</details>
+								<button
+									type="button"
+									class="payload-button"
+									on:click={() =>
+										(activePayload = { id: row.id, body: formatPayload(row.payload) })
+									}
+								>
+									View
+								</button>
 							</td>
 						</tr>
 					{/each}
@@ -58,6 +86,39 @@
 		</div>
 	{/if}
 </section>
+
+{#if activePayload}
+	<div
+		class="modal-backdrop"
+		role="button"
+		tabindex="0"
+		on:click={() => (activePayload = null)}
+		on:keydown={(event) => {
+			if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+				activePayload = null;
+			}
+		}}
+	>
+		<div
+			class="modal"
+			role="dialog"
+			aria-modal="true"
+			aria-label="Usage report payload"
+			on:click={(event) => event.stopPropagation()}
+		>
+			<header class="modal-header">
+				<h2>Raw payload</h2>
+				<div class="modal-actions">
+					<button type="button" class="ghost" on:click={copyPayload}>
+						{copyStatus === 'ok' ? 'Copied' : copyStatus === 'error' ? 'Copy failed' : 'Copy'}
+					</button>
+					<button type="button" class="close" on:click={() => (activePayload = null)}>Close</button>
+				</div>
+			</header>
+			<pre>{activePayload.body}</pre>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.panel {
@@ -114,9 +175,13 @@
 		color: #666;
 	}
 
-	details summary {
+	.payload-button {
+		padding: 0.35rem 0.7rem;
+		border-radius: 999px;
+		border: 1px solid #d2d2d2;
+		background: #f7f7f7;
 		cursor: pointer;
-		color: #1b4dff;
+		font-size: 0.8rem;
 	}
 
 	pre {
@@ -130,6 +195,64 @@
 		font-size: 0.75rem;
 		white-space: pre-wrap;
 		word-break: break-word;
+	}
+
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(12, 12, 12, 0.6);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem;
+		z-index: 1000;
+	}
+
+	.modal {
+		background: #fff;
+		border-radius: 16px;
+		max-width: min(860px, 100%);
+		width: 100%;
+		padding: 1.5rem;
+		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+	}
+
+	.modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1rem;
+	}
+
+	.modal-header h2 {
+		margin: 0;
+		font-size: 1.4rem;
+	}
+
+	.modal-actions {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.ghost {
+		border: 1px solid #d2d2d2;
+		background: #fff;
+		color: #111;
+		padding: 0.35rem 0.75rem;
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 0.8rem;
+	}
+
+	.close {
+		border: none;
+		background: #111;
+		color: #fff;
+		padding: 0.35rem 0.75rem;
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 0.8rem;
 	}
 
 	@media (max-width: 720px) {
