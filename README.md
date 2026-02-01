@@ -32,3 +32,9 @@ If it fails with 404, your Synapse deployment may not expose the shared-secret
 registration endpoint when MAS/MSC3861 is enabled.
 In this environment the script sets the admin flag directly in the Synapse
 database.
+
+## Seeding usage reports (Housekeep pod)
+
+```sh
+kubectl exec -n ess deploy/matrix-housekeep -- /bin/sh -c "cd /app && node scripts/seed_usage_reports.mjs --count 25 --db /data/db.sqlite"
+```
