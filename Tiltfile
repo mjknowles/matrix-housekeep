@@ -2,6 +2,7 @@ APP_NAME = 'matrix-housekeep'
 IMAGE_NAME = 'matrix-housekeep'
 
 k8s_yaml([
+  'k8s/pvc.yaml',
   'k8s/deployment.yaml',
   'k8s/service.yaml',
 ])
