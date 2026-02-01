@@ -69,16 +69,27 @@ Details
 - [ ] Decide retention and compaction strategy for raw data.
 - [ ] Build queries for key metrics:
       total rooms/users, DAU/MAU, messages/day, users per room.
+- [ ] Remove the arbitrary 10-report UI limit and add pagination/windowing for large datasets.
 
 5) Build UI for usage analytics
-- [ ] Define data API endpoints for chart/summary widgets.
+- [x] Define data API endpoints for chart/summary widgets.
 - [ ] Implement dashboard views:
       - Overview cards (rooms, users, DAU/MAU)
       - Activity trends (messages/day)
       - Distribution (users per room, messages per room)
+      - [x] Initial charts: message volume and users/rooms trends
 - [ ] Add filters (date range, server_context).
 - [ ] Add loading/empty/error states.
 - [ ] Add SSE or polling to auto-refresh dashboards as new reports arrive.
+- [ ] Charting library: use `svelte-echarts` + Apache ECharts with tree-shaking (import only needed charts/components/renderers).
+- [ ] Visualization plan (based on Synapse usage payloads):
+      - Summary cards: total users, total rooms, DAU, MAU, daily messages, uptime.
+      - Trend lines: total users/rooms over time; DAU/MAU; daily messages & sent messages.
+      - E2EE activity: daily e2ee messages vs total messages; daily active e2ee rooms vs total active rooms.
+      - User composition: native vs bridged vs guest (daily_user_type_*).
+      - Resource health: cpu_average and memory_rss over time, cache_factor and event_cache_size as annotations.
+      - Client activity: r30v2_users_* stacked bar/area (when non-zero).
+      - Context breakdown: server_context split if multiple contexts report.
 
 6) Wire Synapse to report to this app via Tilt patching
 - [x] Identify Synapse configmap keys for `report_stats_endpoint` and related options.

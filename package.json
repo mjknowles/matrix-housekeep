@@ -46,7 +46,9 @@
 		"vitest-browser-svelte": "^2.0.2"
 	},
 	"dependencies": {
-		"better-sqlite3": "^12.6.2"
+		"better-sqlite3": "^12.6.2",
+		"echarts": "^5.6.0",
+		"svelte-echarts": "^1.0.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

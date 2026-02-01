@@ -1,8 +1,48 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
+	type ReportPoint = {
+		receivedAt: number | null;
+		totalUsers: number | null;
+		totalRoomCount: number | null;
+		dailyActiveUsers: number | null;
+		monthlyActiveUsers: number | null;
+		dailyMessages: number | null;
+		dailySentMessages: number | null;
+		dailyActiveRooms: number | null;
+		dailyE2eeMessages: number | null;
+		dailySentE2eeMessages: number | null;
+		dailyActiveE2eeRooms: number | null;
+		dailyUserTypeNative: number | null;
+		dailyUserTypeBridged: number | null;
+		dailyUserTypeGuest: number | null;
+		cpuAverage: number | null;
+		memoryRss: number | null;
+		cacheFactor: number | null;
+		eventCacheSize: number | null;
+		r30v2UsersAll: number | null;
+		r30v2UsersAndroid: number | null;
+		r30v2UsersElectron: number | null;
+		r30v2UsersIos: number | null;
+		r30v2UsersWeb: number | null;
+	};
+
 	let { data } = $props();
 	const rows = $derived(data?.rows ?? []);
 	let activePayload = $state<{ id: string; body: string } | null>(null);
 	let copyStatus = $state<'idle' | 'ok' | 'error'>('idle');
+	const reportSeries = $derived(
+		(((data?.reports && data.reports.length > 0 ? data.reports : data?.rows) as ReportPoint[]) ??
+			[])
+	);
+	const reportCount = $derived(reportSeries.length);
+	let messagesOptions = $state<Record<string, unknown> | null>(null);
+	let usersOptions = $state<Record<string, unknown> | null>(null);
+	let ChartComponent = $state<
+		null | ((props: { options: Record<string, unknown>; init: unknown; class?: string }) => unknown)
+	>(null);
+	let initFn = $state<unknown>(null);
+	let chartError = $state<string | null>(null);
 
 	const formatDate = (value: number | Date | null) => {
 		if (!value) return '—';
@@ -21,6 +61,57 @@
 		}
 	};
 
+	const formatAxisTime = (value: number | string | null) => {
+		if (!value) return '';
+		const date = new Date(value);
+		return new Intl.DateTimeFormat('en-US', {
+			month: 'short',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit'
+		}).format(date);
+	};
+
+	const buildOptions = (reports: ReportPoint[]) => {
+		const labels = reports.map((report) => formatAxisTime(report.receivedAt));
+
+		const series = (label: string, key: keyof ReportPoint) => ({
+			name: label,
+			type: 'line',
+			smooth: true,
+			showSymbol: false,
+			data: reports.map((report) => report[key])
+		});
+
+		messagesOptions = {
+			tooltip: { trigger: 'axis' },
+			legend: { top: 0 },
+			grid: { left: 40, right: 20, top: 40, bottom: 40 },
+			xAxis: { type: 'category', data: labels },
+			yAxis: { type: 'value' },
+			series: [
+				series('Daily messages', 'dailyMessages'),
+				series('Daily sent', 'dailySentMessages'),
+				series('Daily e2ee', 'dailyE2eeMessages'),
+				series('Daily sent e2ee', 'dailySentE2eeMessages')
+			]
+		};
+
+		usersOptions = {
+			tooltip: { trigger: 'axis' },
+			legend: { top: 0 },
+			grid: { left: 40, right: 20, top: 40, bottom: 40 },
+			xAxis: { type: 'category', data: labels },
+			yAxis: { type: 'value' },
+			series: [
+				series('Total users', 'totalUsers'),
+				series('Total rooms', 'totalRoomCount'),
+				series('DAU', 'dailyActiveUsers'),
+				series('MAU', 'monthlyActiveUsers')
+			]
+		};
+	};
+
 	const copyPayload = async () => {
 		if (!activePayload) return;
 		try {
@@ -33,7 +124,85 @@
 			copyStatus = 'error';
 		}
 	};
+
+	onMount(async () => {
+		try {
+			const [{ Chart }, { init, use }, charts, components, renderers] = await Promise.all([
+				import('svelte-echarts'),
+				import('echarts/core'),
+				import('echarts/charts'),
+				import('echarts/components'),
+				import('echarts/renderers')
+			]);
+
+			use([
+				charts.LineChart,
+				components.GridComponent,
+				components.TooltipComponent,
+				components.LegendComponent,
+				renderers.CanvasRenderer
+			]);
+
+			ChartComponent = Chart as typeof ChartComponent;
+			initFn = init;
+			buildOptions(reportSeries);
+		} catch {
+			chartError = 'Charts failed to load. Check the console for module errors.';
+		}
+	});
+
+	$effect(() => {
+		buildOptions(reportSeries);
+	});
 </script>
+
+<section class="panel">
+	<div class="header">
+		<h1>Usage trends</h1>
+		<span class="meta">Latest report and recent activity</span>
+	</div>
+
+	{#if reportCount === 0}
+		<p class="empty">No chart data yet.</p>
+	{:else}
+		<div class="chart-grid">
+			<div class="chart-card">
+				<h2>Message volume</h2>
+				{#if ChartComponent && initFn && messagesOptions}
+					<div class="chart-wrap">
+						<svelte:component
+							this={ChartComponent}
+							options={messagesOptions}
+							init={initFn}
+							class="chart"
+						/>
+					</div>
+				{:else if chartError}
+					<p class="empty">{chartError}</p>
+				{:else}
+					<p class="empty">Loading chart… ({reportCount} reports)</p>
+				{/if}
+			</div>
+			<div class="chart-card">
+				<h2>Users & rooms</h2>
+				{#if ChartComponent && initFn && usersOptions}
+					<div class="chart-wrap">
+						<svelte:component
+							this={ChartComponent}
+							options={usersOptions}
+							init={initFn}
+							class="chart"
+						/>
+					</div>
+				{:else if chartError}
+					<p class="empty">{chartError}</p>
+				{:else}
+					<p class="empty">Loading chart… ({reportCount} reports)</p>
+				{/if}
+			</div>
+		</div>
+	{/if}
+</section>
 
 <section class="panel">
 	<div class="header">
@@ -142,6 +311,36 @@
 
 	.meta {
 		color: #5c5c5c;
+	}
+
+	.chart-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 1.5rem;
+	}
+
+	.chart-card {
+		background: #f8f7f4;
+		border-radius: 16px;
+		padding: 1.5rem;
+		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+	}
+
+	.chart-card h2 {
+		margin: 0 0 0.75rem;
+		font-size: 1.05rem;
+	}
+
+	.chart-wrap {
+		height: 260px;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.chart {
+		height: 100%;
+		width: 100%;
+		display: block;
 	}
 
 	.empty {
@@ -258,6 +457,10 @@
 	@media (max-width: 720px) {
 		.panel {
 			padding: 1.5rem;
+		}
+
+		.chart-wrap {
+			height: 220px;
 		}
 
 		table {

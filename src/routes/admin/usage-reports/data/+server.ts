@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types';
+import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { usageReport } from '$lib/server/db/schema';
 import { desc } from 'drizzle-orm';
@@ -17,14 +17,16 @@ const toMs = (value: Date | number | null) => {
 	return value instanceof Date ? value.getTime() : value;
 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const GET = async ({ locals, url }) => {
 	if (!locals.session?.isAdmin) {
 		throw error(403, 'Forbidden');
 	}
 
+	const limitRaw = Number(url.searchParams.get('limit') ?? '200');
+	const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 1000) : 200;
+
 	const rows = await db
 		.select({
-			id: usageReport.id,
 			receivedAt: usageReport.receivedAt,
 			homeserver: usageReport.homeserver,
 			serverContext: usageReport.serverContext,
@@ -39,7 +41,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		})
 		.from(usageReport)
 		.orderBy(desc(usageReport.receivedAt))
-		.limit(10);
+		.limit(limit);
 
 	const reports = rows
 		.map((row) => {
@@ -69,11 +71,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 				r30v2UsersAndroid: (payload.r30v2_users_android as number | undefined) ?? null,
 				r30v2UsersElectron: (payload.r30v2_users_electron as number | undefined) ?? null,
 				r30v2UsersIos: (payload.r30v2_users_ios as number | undefined) ?? null,
-				r30v2UsersWeb: (payload.r30v2_users_web as number | undefined) ?? null,
-				payload: row.payload
+				r30v2UsersWeb: (payload.r30v2_users_web as number | undefined) ?? null
 			};
 		})
 		.reverse();
 
-	return { rows, reports };
+	return json({
+		latest: reports.at(-1) ?? null,
+		reports
+	});
 };
