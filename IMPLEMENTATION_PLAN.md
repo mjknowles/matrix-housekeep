@@ -7,12 +7,13 @@ Checklist (we will track progress by checking items as we implement):
 
 - [ ] Confirm cluster resources and expectations
 - [ ] Define authentication + authorization model (MAS + privileges)
-- [ ] Implement stats ingestion endpoint (Synapse usage reporting)
-- [ ] Persist and aggregate usage data
+- [x] Implement stats ingestion endpoint (Synapse usage reporting)
+- [x] Persist and aggregate usage data
 - [ ] Build UI for usage analytics
-- [ ] Wire Synapse to report to this app via Tilt patching
+- [x] Wire Synapse to report to this app via Tilt patching
 - [ ] Add local dev wiring and verification steps
 - [ ] Add tests and operational docs
+- [x] Persist dev DB data across rebuilds (PVC for sqlite)
 
 Details
 
@@ -55,15 +56,15 @@ Details
 - [ ] Map key fields we want to surface:
       `total_users`, `total_room_count`, `daily_active_users`, `monthly_active_users`,
       `daily_messages`, `daily_sent_messages`, `daily_active_rooms`, `server_context`, `homeserver`.
-- [ ] Define the HTTP endpoint path and authentication mechanism for Synapse posts
+- [x] Define the HTTP endpoint path and authentication mechanism for Synapse posts
       (shared secret, mTLS, or allowlist by source).
-- [ ] Ensure the usage collection endpoint is not publicly accessible.
-- [ ] Add a SvelteKit server route to receive and validate the payload.
+- [x] Ensure the usage collection endpoint is not publicly accessible.
+- [x] Add a SvelteKit server route to receive and validate the payload.
 - [ ] Add request validation and error handling (schema, size limits, rate limiting).
 - [ ] Capture origin metadata (server name, server_context).
 
 4) Persist and aggregate usage data
-- [ ] Define DB schema to store raw stats snapshots (timestamped).
+- [x] Define DB schema to store raw stats snapshots (timestamped).
 - [ ] Add aggregate/materialized views for common metrics (daily/weekly counts).
 - [ ] Decide retention and compaction strategy for raw data.
 - [ ] Build queries for key metrics:
@@ -77,19 +78,21 @@ Details
       - Distribution (users per room, messages per room)
 - [ ] Add filters (date range, server_context).
 - [ ] Add loading/empty/error states.
+- [ ] Add SSE or polling to auto-refresh dashboards as new reports arrive.
 
 6) Wire Synapse to report to this app via Tilt patching
-- [ ] Identify Synapse configmap keys for `report_stats_endpoint` and related options.
-- [ ] Add Tilt k8s patch to inject the reporting endpoint into Synapse configmap `ess-synapse`
+- [x] Identify Synapse configmap keys for `report_stats_endpoint` and related options.
+- [x] Add Tilt k8s patch to inject the reporting endpoint into Synapse configmap `ess-synapse`
       (in `01-homeserver-underrides.yaml` where `report_stats: false` currently lives).
-- [ ] Set `report_stats: true` and `report_stats_endpoint: http://matrix-housekeep.ess.svc.cluster.local/report-usage-stats/push?access_token=...`
+- [x] Set `report_stats: true` and `report_stats_endpoint: http://matrix-housekeep.ess.svc.cluster.local/report-usage-stats/push?access_token=...`
       (or another agreed endpoint path).
-- [ ] Ensure the app service DNS name resolves within the cluster.
+- [x] Ensure the app service DNS name resolves within the cluster.
 - [ ] Validate Synapse reload/restart behavior after config change.
 
 7) Add local dev wiring and verification steps
 - [ ] Provide a dev seed script to simulate stats posts.
-- [ ] Add example environment configuration for MAS + stats endpoint.
+- [x] Add example environment configuration for MAS + stats endpoint.
+- [ ] Document how to restart Synapse to trigger a new usage report (~5 min after startup).
 - [ ] Document how to verify ingestion (logs, DB rows, UI).
 - [ ] Add port-forward/ingress notes for MAS callbacks in local dev.
 

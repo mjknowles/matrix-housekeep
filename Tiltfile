@@ -29,7 +29,9 @@ docker_build(
     '.svelte-kit',
     'build',
     'dist',
+    'IMPLEMENTATION_PLAN.md',
     'node_modules',
+    'README.md',
   ],
   live_update=[
     sync('src', '/app/src'),

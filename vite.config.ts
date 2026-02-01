@@ -4,6 +4,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	server: {
+		host: true,
+		allowedHosts: ['matrix-housekeep.ess.svc.cluster.local', 'matrix-housekeep']
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
