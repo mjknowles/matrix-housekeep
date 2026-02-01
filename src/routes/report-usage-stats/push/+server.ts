@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import type { RequestEvent } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { usageReport } from '$lib/server/db/schema';
@@ -21,7 +22,10 @@ function extractNumber(payload: Record<string, unknown>, key: string): number | 
 	return null;
 }
 
-export const POST: RequestHandler = async ({ request, url }) => {
+const handleRequest: RequestHandler = async ({
+	request,
+	url
+}: RequestEvent) => {
 	const expectedToken = env.USAGE_STATS_TOKEN;
 	if (!expectedToken) {
 		return new Response('Usage stats token not configured', { status: 500 });
@@ -66,3 +70,6 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 	return new Response(null, { status: 204 });
 };
+
+export const POST = handleRequest;
+export const PUT = handleRequest;
