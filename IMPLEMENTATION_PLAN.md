@@ -82,7 +82,7 @@ Details
 - [ ] Identify Synapse configmap keys for `report_stats_endpoint` and related options.
 - [ ] Add Tilt k8s patch to inject the reporting endpoint into Synapse configmap `ess-synapse`
       (in `01-homeserver-underrides.yaml` where `report_stats: false` currently lives).
-- [ ] Set `report_stats: true` and `report_stats_endpoint: http://matrix-housekeep.ess.svc.cluster.local/report-usage-stats/push`
+- [ ] Set `report_stats: true` and `report_stats_endpoint: http://matrix-housekeep.ess.svc.cluster.local/report-usage-stats/push?access_token=...`
       (or another agreed endpoint path).
 - [ ] Ensure the app service DNS name resolves within the cluster.
 - [ ] Validate Synapse reload/restart behavior after config change.
@@ -108,6 +108,7 @@ Details
 - [ ] Add ingress/hostname for the app + TLS.
 - [ ] Document required scopes and admin policy for MAS.
 - [ ] Ensure MAS config sync behavior is understood (restart/sync) when changing clients.
+- [ ] Replace dev-only auto-migration with proper migrations (and/or init job) for production.
 
 10) Synapse Admin API capabilities (later)
 - [ ] Enumerate admin endpoints we want in Housekeep (user admin, rooms, media, federation, etc.).

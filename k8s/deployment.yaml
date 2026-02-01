@@ -36,6 +36,8 @@ spec:
               value: openid urn:matrix:org.matrix.msc2967.client:api:* urn:synapse:admin:*
             - name: SYNAPSE_BASE_URL
               value: http://ess-synapse.ess.svc.cluster.local:8008
+            - name: USAGE_STATS_TOKEN
+              value: dev-usage-token
           ports:
             - containerPort: 5173
           volumeMounts:
