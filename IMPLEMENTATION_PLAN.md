@@ -11,7 +11,6 @@ Checklist (we will track progress by checking items as we implement):
 - [x] Persist and aggregate usage data
 - [ ] Build UI for usage analytics
 - [x] Wire Synapse to report to this app via Tilt patching
-- [ ] Add local dev wiring and verification steps
 - [ ] Add tests and operational docs
 - [x] Persist dev DB data across rebuilds (PVC for sqlite)
 
@@ -100,15 +99,9 @@ Details
 - [x] Ensure the app service DNS name resolves within the cluster.
 - [ ] Validate Synapse reload/restart behavior after config change.
 
-7) Add local dev wiring and verification steps
-- [ ] Provide a dev seed script to simulate stats posts.
-- [x] Add example environment configuration for MAS + stats endpoint.
-- [ ] Document how to restart Synapse to trigger a new usage report (~5 min after startup).
-- [ ] Document how to verify ingestion (logs, DB rows, UI).
-- [ ] Add port-forward/ingress notes for MAS callbacks in local dev.
 
 8) Tests and operational docs
-- [ ] Add endpoint tests for stats ingestion (valid + invalid payloads).
+- [x] Add endpoint tests for stats ingestion (valid + invalid payloads).
 - [ ] Add authorization tests for privileged access.
 - [ ] Add a short RUNBOOK section (debugging, common failures, data retention).
 
