@@ -60,7 +60,7 @@ Details
       (shared secret, mTLS, or allowlist by source).
 - [x] Ensure the usage collection endpoint is not publicly accessible.
 - [x] Add a SvelteKit server route to receive and validate the payload.
-- [ ] Add request validation and error handling (schema, size limits, rate limiting).
+- [x] Add request validation and error handling (schema, size limits, rate limiting).
 - [ ] Capture origin metadata (server name, server_context).
 
 4) Persist and aggregate usage data
@@ -69,7 +69,7 @@ Details
 - [ ] Decide retention and compaction strategy for raw data.
 - [ ] Build queries for key metrics:
       total rooms/users, DAU/MAU, messages/day, users per room.
-- [ ] Remove the arbitrary 10-report UI limit and add pagination/windowing for large datasets.
+- [x] Remove the arbitrary 10-report UI limit and add pagination/windowing for large datasets.
 
 5) Build UI for usage analytics
 - [x] Define data API endpoints for chart/summary widgets.

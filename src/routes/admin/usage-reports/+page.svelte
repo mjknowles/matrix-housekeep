@@ -29,6 +29,7 @@
 
 	let { data } = $props();
 	const rows = $derived(data?.rows ?? []);
+	const pagination = $derived(data?.pagination ?? { limit: 50, nextCursor: null, before: null });
 	let activePayload = $state<{ id: string; body: string } | null>(null);
 	let copyStatus = $state<'idle' | 'ok' | 'error'>('idle');
 	const reportSeries = $derived(
@@ -36,6 +37,8 @@
 			[])
 	);
 	const reportCount = $derived(reportSeries.length);
+	const hasOlder = $derived(Boolean(pagination?.nextCursor));
+	const hasBefore = $derived(Boolean(pagination?.before));
 	let messagesOptions = $state<Record<string, unknown> | null>(null);
 	let usersOptions = $state<Record<string, unknown> | null>(null);
 	let ChartComponent = $state<
@@ -60,6 +63,13 @@
 			return raw;
 		}
 	};
+
+	const buildOlderHref = () =>
+		pagination?.nextCursor
+			? `/admin/usage-reports?before=${encodeURIComponent(pagination.nextCursor)}&limit=${
+					pagination.limit
+				}`
+			: '/admin/usage-reports';
 
 	const formatAxisTime = (value: number | string | null) => {
 		if (!value) return '';
@@ -207,7 +217,7 @@
 <section class="panel">
 	<div class="header">
 		<h1>Usage reports</h1>
-		<span class="meta">Most recent 10 reports</span>
+		<span class="meta">Showing {rows.length} reports (page size {pagination.limit})</span>
 	</div>
 
 	{#if rows.length === 0}
@@ -252,6 +262,14 @@
 					{/each}
 				</tbody>
 			</table>
+		</div>
+		<div class="pager">
+			{#if hasBefore}
+				<a class="link" href="/admin/usage-reports">Back to latest</a>
+			{/if}
+			{#if hasOlder}
+				<a class="link" href={buildOlderHref()}>Older reports</a>
+			{/if}
 		</div>
 	{/if}
 </section>
@@ -351,6 +369,22 @@
 
 	.table-wrap {
 		overflow-x: auto;
+	}
+
+	.pager {
+		margin-top: 1rem;
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.link {
+		color: #1f4fcc;
+		text-decoration: none;
+		font-weight: 600;
+	}
+
+	.link:hover {
+		text-decoration: underline;
 	}
 
 	table {
