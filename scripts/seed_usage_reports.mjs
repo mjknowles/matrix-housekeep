@@ -9,11 +9,12 @@ const getArgValue = (flag) => {
 
 if (args.includes('--help') || args.includes('-h')) {
 	console.log(`Usage:
-  node scripts/seed_usage_reports.mjs [--count N] [--db /path/to/db.sqlite]
+  node scripts/seed_usage_reports.mjs [--count N] [--db /path/to/db.sqlite] [--reset]
 
 Defaults:
   --count 25
   --db    DATABASE_URL env var
+  --reset false
 `);
 	process.exit(0);
 }
@@ -124,6 +125,10 @@ const makePayload = (i, total, prevTotals) => {
 };
 
 const db = new Database(dbPath);
+const shouldReset = args.includes('--reset');
+if (shouldReset) {
+	db.exec('DELETE FROM usage_report;');
+}
 const insert = db.prepare(`
 	INSERT INTO usage_report (
 		id,

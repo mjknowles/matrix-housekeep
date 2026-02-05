@@ -36,5 +36,5 @@ database.
 ## Seeding usage reports (Housekeep pod)
 
 ```sh
-kubectl exec -n ess deploy/matrix-housekeep -- /bin/sh -c "cd /app && node scripts/seed_usage_reports.mjs --count 25 --db /data/db.sqlite"
+kubectl exec -n ess deploy/matrix-housekeep -- /bin/sh -c "cd /app && node scripts/seed_usage_reports.mjs --count 25 --db /data/db.sqlite --reset"
 ```
